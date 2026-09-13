@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="ToolNest PDF Merger — combine multiple PDF files into one PDF directly in your browser.">
+<title>ToolNest — PDF Merger</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2d;--panel2:#18233b;--text:#eef4ff;--muted:#a9b5cf;--line:#2b3855;--accent:#7c9cff;--good:#62e6c5;--danger:#ff8f9c}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(circle at top right,#1d2c55 0,#0b1020 48%);color:var(--text);line-height:1.5}.wrap{max-width:980px;margin:auto;padding:24px}.nav{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}.brand{font-size:1.6rem;font-weight:800;letter-spacing:-.05em}.brand span{color:var(--good)}.nav a{color:var(--muted);text-decoration:none;margin-left:18px}.hero{padding:72px 0 30px;max-width:760px}.eyebrow{color:var(--good);font-size:.78rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase}.hero h1{font-size:clamp(2.5rem,7vw,5rem);line-height:1.02;letter-spacing:-.07em;margin:14px 0}.hero p{color:var(--muted);font-size:1.1rem}.ad{border:1px dashed #53617f;color:#8290ad;text-align:center;padding:16px;border-radius:12px;margin:25px 0;font-size:.85rem}.card{background:rgba(18,26,45,.94);border:1px solid var(--line);border-radius:22px;padding:26px}.drop{display:block;border:2px dashed #53617f;border-radius:16px;padding:34px 20px;text-align:center;background:#0e172b;cursor:pointer}.drop:hover{border-color:var(--accent)}input[type=file]{display:none}.drop strong{display:block;font-size:1.1rem;margin-bottom:6px}.muted{color:var(--muted)}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}button{font:inherit;cursor:pointer;border-radius:10px;padding:11px 16px;font-weight:750}.primary{background:var(--accent);border:0;color:#081022}.secondary{background:transparent;border:1px solid var(--line);color:var(--text)}button:disabled{opacity:.45;cursor:not-allowed}.files{list-style:none;padding:0;margin:22px 0 0}.files li{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#0b1222;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:8px}.files button{padding:5px 9px;font-size:.85rem}.status{margin-top:15px;color:var(--muted);min-height:24px}.note{margin-top:18px;color:var(--muted);font-size:.9rem}.footer{border-top:1px solid var(--line);margin-top:45px;padding:25px 0;color:var(--muted);font-size:.9rem}@media(max-width:600px){.wrap{padding:18px}.hero{padding-top:48px}.card{padding:17px}.files li{align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="nav"><div class="brand">Tool<span>Nest</span></div><nav><a href="#tool">PDF Merger</a><a href="#about">About</a></nav></header>
+<section class="hero"><div class="eyebrow">One focused tool</div><h1>Merge PDFs in seconds.</h1><p>Combine multiple PDF documents into one downloadable file. No account required. Your files are processed in your browser.</p></section>
+<div class="ad">Advertisement space — connect an approved ad provider later.</div>
+<section id="tool" class="card">
+<h2>PDF Merger</h2><p class="muted">Select two or more PDF files, arrange them in the order you want, and merge them.</p>
+<label class="drop" for="pdfInput"><strong>Choose PDF files</strong><span class="muted">Click here to select multiple PDFs</span></label>
+<input id="pdfInput" type="file" accept="application/pdf" multiple>
+<ul id="fileList" class="files" aria-live="polite"></ul>
+<div class="actions"><button id="mergeBtn" class="primary" disabled>Merge PDFs</button><button id="clearBtn" class="secondary" disabled>Clear files</button></div>
+<div id="status" class="status" role="status"></div>
+<p class="note">Privacy note: files are read locally by your browser and are not uploaded by this page. The PDF library is loaded from a public CDN.</p>
+</section>
+<section id="about" class="footer"><strong>About ToolNest</strong><br>ToolNest is a simple collection of focused browser utilities. This version intentionally contains one tool so the site can focus on a clear, high-demand document workflow.</section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script>
+const input=document.getElementById('pdfInput'), list=document.getElementById('fileList'), mergeBtn=document.getElementById('mergeBtn'), clearBtn=document.getElementById('clearBtn'), status=document.getElementById('status');
+let files=[];
+function render(){list.innerHTML='';files.forEach((file,index)=>{const li=document.createElement('li');const name=document.createElement('span');name.textContent=(index+1)+'. '+file.name;const controls=document.createElement('span');if(index>0){const up=document.createElement('button');up.textContent='↑';up.className='secondary';up.onclick=()=>{[files[index-1],files[index]]=[files[index],files[index-1]];render()};controls.appendChild(up)}if(index<files.length-1){const down=document.createElement('button');down.textContent='↓';down.className='secondary';down.onclick=()=>{[files[index+1],files[index]]=[files[index],files[index+1]];render()};controls.appendChild(down)}const remove=document.createElement('button');remove.textContent='Remove';remove.className='secondary';remove.onclick=()=>{files.splice(index,1);render()};controls.appendChild(remove);li.append(name,controls);list.appendChild(li)});mergeBtn.disabled=files.length<2;clearBtn.disabled=files.length===0}
+input.addEventListener('change',()=>{files.push(...Array.from(input.files));render();input.value='';status.textContent=files.length+' PDF file(s) selected.'});
+clearBtn.onclick=()=>{files=[];render();status.textContent='Selection cleared.'};
+mergeBtn.onclick=async()=>{if(!window.PDFLib){status.textContent='PDF library is still loading. Please try again.';return}mergeBtn.disabled=true;status.textContent='Merging PDFs…';try{const output=await PDFLib.PDFDocument.create();for(let i=0;i<files.length;i++){status.textContent='Processing '+(i+1)+' of '+files.length+'…';const bytes=await files[i].arrayBuffer();const source=await PDFLib.PDFDocument.load(bytes);const pages=await output.copyPages(source,source.getPageIndices());pages.forEach(page=>output.addPage(page))}const blob=new Blob([await output.save()],{type:'application/pdf'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='merged-toolnest.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status.textContent='Done — your merged PDF download has started.'}catch(error){console.error(error);status.textContent='Could not merge these files. Please check that they are valid, unencrypted PDFs.'}finally{mergeBtn.disabled=files.length<2}};
+</script>
+</body>
+</html>
